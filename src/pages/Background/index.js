@@ -1,6 +1,3 @@
-import '../../assets/img/icon-34.png';
-import '../../assets/img/icon-128.png';
-
 console.log('Yooo');
 chrome.tabs.onCreated.addListener(function(tab) {
   console.log("hello");
