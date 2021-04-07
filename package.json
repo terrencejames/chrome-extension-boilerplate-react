@@ -1,7 +1,7 @@
 {
   "name": "tab-grouper",
   "version": "1.0.0",
-  "description": "ya",
+  "description": "Simple tab grouper for Google Chrome.",
   "license": "MIT",
   "repository": {
     "type": "git",

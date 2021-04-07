@@ -1,81 +1,19 @@
-import '../../assets/img/icon-34.png';
-import '../../assets/img/icon-128.png';
-
-
-// chrome.contextMenus.create({
-//     "title": "Open link in tab group",
-//     "onclick": function(e) {
-//       openNewTab(e.linkUrl);
-//     },
-//     "contexts": ["link"]
-// })
-//
-// chrome.contextMenus.create({
-//     "title": "Open image in tab group",
-//     "onclick": function(e) {
-//       console.log(e);
-//     },
-//     "contexts": ["image"]
-// })
-
-function openNewTab(url, groupId){
-  // need to pass in groupId somehow, and maybe index?
-  var createProperties = {
-    "active" : false,
-    "url" : url
-  };
-  chrome.tabs.create(createProperties, addToTabGroup(groupId));
-}
-
-function addToTabGroup(groupId, tab){
-  console.log(tab);
-  console.log(groupId);
-}
+// Event listeners
 
 chrome.tabs.onCreated.addListener(function(tab) {
-  var openerTabId = tab.openerTabId;
-  if (openerTabId != null && tab.active == false){
-    chrome.tabs.get(openerTabId, function(openerTab)
-    {
-      var groupId = openerTab.groupId;
-      var options = {};
-      if (groupId != -1){
-        console.log("Using previous group")
-        options.groupId = groupId;
-        options.tabIds = tab.id;
-      }
-      else{
-        console.log("Creating new group");
-        options.tabIds = [openerTabId, tab.id];
-      }
-      console.log("Grouping tabs now:");
-      chrome.tabs.group(options, null);
-    });
-  }
+  console.log("Add event listener for creating new tabs");
+  addToTabGroup(tab);
 });
 
-function initContextMenuItems(){
-  chrome.tabGroups.query(chrome.windows.WINDOW_ID_CURRENT, addContextMenuItems);
-}
+chrome.contextMenus.onClicked.addListener((e, tab) => {
+  console.log("Context menu item clicked, opening in new tab");
+  openNewTab(e.linkUrl, parseInt(e.menuItemId));
+})
 
-function addContextMenuItems(tabGroupList){
-  tabGroupList.forEach(tabGroup => {
-      addTabGroupContextItem(tabGroup);
-  })
-}
-
-function addTabGroupContextItem(tabGroup){
-  chrome.contextMenus.create({
-      "title": tabGroup.title,
-      "onclick": function(e) {
-        openNewTab(e.linkUrl, tabGroup.id);
-      },
-      "contexts": ["link", "image"]
-  })
-}
 chrome.tabGroups.onCreated.addListener(function(tabGroup){
   // Need to create a new context item
   // Should also be fired at the beginning of this script?
+  addTabGroupContextItem((tabGroup));
 });
 
 chrome.tabGroups.onRemoved.addListener(function(tabGroup){
@@ -87,4 +25,74 @@ chrome.tabGroups.onUpdated.addListener(function(tabGroup){
   // Should also be fired at the beginning of this script
 });
 
+// Tab/tab group functions
+
+function openNewTab(url, groupId){
+  var createProperties = {
+    "active" : false,
+    "url" : url
+  };
+  chrome.tabs.create(createProperties, tab => addToTabGroup(tab, groupId));
+}
+
+function addToTabGroup(tab, tabGroupId = -1){
+  console.log("Adding to tab group");
+  var openerTabId = null;
+  var options = {};
+  if (tabGroupId != -1){
+    console.log("Adding to existing group");
+    options.groupId = tabGroupId;
+    options.tabIds = tab.id;
+  }
+  else{
+    openerTabId = tab.openerTabId;
+    if (openerTabId != null && tab.active == false){
+      chrome.tabs.get(openerTabId, function(openerTab)
+      {
+        var groupId = openerTab.groupId;
+        if (groupId == -1){
+          console.log("Creating new group");
+          options.tabIds = [openerTabId, tab.id];
+        }
+      });
+    }
+  }
+  console.log("Grouping tabs now:");
+  chrome.tabs.group(options, null);
+}
+
+// Context menu functions
+
+function initContextMenuItems(){
+  console.log("Adding context menu items");
+  chrome.contextMenus.create({
+      "title": "Open link in group",
+      "id": "1",
+      "contexts": ["link", "image"]
+  });
+  var queryInfo = {"windowId" : chrome.windows.WINDOW_ID_CURRENT}
+  chrome.tabGroups.query(queryInfo, tabList =>
+    addContextMenuItems(tabList));
+}
+
+function addContextMenuItems(tabGroupList){
+  tabGroupList.forEach(tabGroup => {
+      addTabGroupContextItem(tabGroup);
+  })
+}
+
+function addTabGroupContextItem(tabGroup){
+  var title = tabGroup.title != "" ? tabGroup.title : tabGroup.id.toString();
+  console.log("Adding context menu item for "+ title);
+  chrome.contextMenus.create({
+      "title": title,
+      "id": tabGroup.id.toString(),
+      "parentId": "1",
+      "contexts": ["link", "image"]
+  })
+}
+try {
 initContextMenuItems();
+} catch(e) {
+  console.error(e);
+}
