@@ -1,24 +1,27 @@
 import React from 'react';
+import { useState, useEffect } from 'react';
 import logo from '../../assets/img/logo.svg';
 import Greetings from '../../containers/Greetings/Greetings';
 import './Popup.css';
+import { DndProvider } from 'react-dnd'
+import { HTML5Backend } from 'react-dnd-html5-backend'
+import { Container } from '../../containers/Container'
 
-const Popup = () => {
+const Popup = (props) => {
+
+  const [tabAndGroupList, setTabAndGroupList] = useState([]);
+
+  useEffect(() => {
+    setTabAndGroupList(props.tabAndGroupList);
+    console.log(props);
+  }, [props.tabAndGroupList]);
+
   return (
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/pages/Popup/Popup.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React!
-        </a>
+      <DndProvider backend={HTML5Backend}>
+        <Container tabAndGroupList={tabAndGroupList} />
+      </DndProvider>
       </header>
     </div>
   );

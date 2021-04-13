@@ -1,5 +1,4 @@
 .App {
-  position: absolute;
   top: 0px;
   bottom: 0px;
   left: 0px;
@@ -29,6 +28,7 @@
   justify-content: center;
   font-size: calc(10px + 2vmin);
   color: white;
+
 }
 
 .App-link {

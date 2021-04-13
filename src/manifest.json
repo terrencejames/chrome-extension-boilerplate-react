@@ -7,6 +7,10 @@
     "default_popup": "popup.html",
     "default_icon": "icon-34.png"
   },
+  "permissions": [
+    "tabGroups",
+    "tabs"
+  ],
   "chrome_url_overrides": {
     "newtab": "newtab.html"
   },
